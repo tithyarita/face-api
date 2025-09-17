@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Emotion Detection</title>
+<script  src="face-api.min.js"></script>
+<style>
+    /* Reset default margins */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-image: url('bg4.jpg');
+        background-size: cover; 
+
+
+
+        
+        background-attachment: fixed;
+    }
+
+    .container {
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 {
+        font-size: 28px;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    video {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        max-width: 100%;
+    }
+
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .video-wrapper {
+        position: relative;
+        width: 640px;
+        height: 480px;
+        margin-bottom: 20px;
+    }
+
+    #emotion {
+        font-size: 24px;
+        font-weight: bold;
+        padding: 8px 15px;
+        border-radius: 50px;
+        color: white;
+        min-width: 150px;
+        text-align: center;
+        transition: background 0.3s;
+    }
+
+    /* Color coding for emotions */
+    .happy { background-color: #ffeb3b; color: #333; }
+    .sad { background-color: #03a9f4; color: #fff; }
+    .angry { background-color: #f44336; color: #fff; }
+    .surprised { background-color: #ff9800; color: #fff; }
+    .neutral { background-color: #9e9e9e; color: #fff; }
+    .fearful { background-color: #9c27b0; color: #fff; }
+    .disgusted { background-color: #4caf50; color: #fff; }
+    /* Responsive for small screens (iPhones, small devices) */
+/* Responsive for small screens (iPhones, small devices) */
+/* Responsive for small screens (iPhones, small devices) */
+@media (max-width: 480px) {
+    body {
+        display: flex;
+        justify-content: center !important; /* horizontal center */ 
+        align-items: center;     /* vertical center */
+        height: 100vh;           /* full viewport height */
+        padding: 0;
+        margin: 0;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    #emotion {
+        font-size: 18px;
+        padding: 6px 12px;
+        min-width: 120px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 95%;             /* scale container width */
+        padding: 15px 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .video-wrapper {
+        width: 100%;
+        max-width: 640px;
+        aspect-ratio: 4 / 3;
+        position: relative;
+    }
+
+    video, canvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+    }
+}
+
+
+
+
+
+    
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Emotion Detection</h1>
+    <div class="video-wrapper">
+        <video id="video" width="640" height="480" autoplay muted></video>
+        <canvas id="overlay" width="640" height="480"></canvas>
+    </div>
+    <div id="emotion">Detecting...</div>
+</div>
+
+<script>
+const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const context = overlay.getContext('2d');
+const emotionLabel = document.getElementById('emotion');
+
+async function loadModels() {
+    const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+    startVideo();
+}
+
+function startVideo() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error("Camera error:", err));
+}
+
+video.addEventListener('play', () => {
+    const displaySize = { width: video.width, height: video.height };
+    faceapi.matchDimensions(overlay, displaySize);
+
+    setInterval(async () => {
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceExpressions();
+
+        context.clearRect(0, 0, overlay.width, overlay.height);
+
+        if (detections.length > 0) {
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            faceapi.draw.drawDetections(overlay, resizedDetections);
+
+            const expressions = detections[0].expressions;
+            const maxEmotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+
+            // Set text and color class
+            emotionLabel.innerText = maxEmotion.charAt(0).toUpperCase() + maxEmotion.slice(1);
+            emotionLabel.className = '';
+            emotionLabel.classList.add(maxEmotion);
+        } else {
+            emotionLabel.innerText = "No face detected";
+            emotionLabel.className = '';
+        }
+    }, 200);
+});
+
+loadModels();
+</script>
+</body>
+</html>
