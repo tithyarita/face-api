@@ -256,7 +256,7 @@
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            background: #f1f1f181 !important;
+            background: #f1f1f1!important;
             font-size: 18px;
             font-family: 'Baloo 2', cursive;
         }
@@ -293,8 +293,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center;
-            border-radius: 8px;
         }
 
         /* Footer */
@@ -354,12 +352,6 @@
             font-family: 'Baloo 2', cursive;
             width: 45%;
             margin-bottom: 20px;
-        }
-                .photo1 {   
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            object-position: center;
-            display: block;
-            margin: auto;
         }
 
         .share:hover {
@@ -655,17 +647,23 @@
                     clearInterval(scanInterval);
                     clearInterval(countdownInterval);
 
-                    // Crop to square (centered)
-                    const videoAspect = video.videoWidth / video.videoHeight;
-                    const frameSize = Math.min(video.videoWidth, video.videoHeight);
-                    const cropX = (video.videoWidth - frameSize) / 2;
-                    const cropY = (video.videoHeight - frameSize) / 2;
+                    let cropWidth = video.videoWidth;
+                    let cropHeight = video.videoHeight;
+                    let sx = 0, sy = 0;
+
+                    // If vertical (portrait), crop top/bottom to match width (centered)
+                    if (video.videoHeight > video.videoWidth) {
+                        cropHeight = video.videoWidth;
+                        sy = (video.videoHeight - cropHeight) / 2;
+                    }
+                    // If horizontal (landscape), use full image (no crop)
+                    // If square, nothing changes
 
                     const canvasPhoto = document.createElement('canvas');
-                    canvasPhoto.width = frameSize;
-                    canvasPhoto.height = frameSize;
+                    canvasPhoto.width = cropWidth;
+                    canvasPhoto.height = cropHeight;
                     const ctx = canvasPhoto.getContext('2d');
-                    ctx.drawImage(video, cropX, cropY, frameSize, frameSize, 0, 0, frameSize, frameSize);
+                    ctx.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
                     capturedPhoto.src = canvasPhoto.toDataURL('image/png');
                     capturedPhoto.style.display = 'block';
