@@ -72,7 +72,9 @@
         .photo1 {
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            max-width: 100%;
+            object-position: center;
+            display: block;
+            margin: auto;
         }
 
         .photo {
@@ -667,6 +669,8 @@
 
                     capturedPhoto.src = canvasPhoto.toDataURL('image/png');
                     capturedPhoto.style.display = 'block';
+                    capturedPhoto.style.objectFit = 'cover';
+                    capturedPhoto.style.objectPosition = 'center';
                     video.style.display = 'none';
 
                     const dominantEmotion = Object.keys(emotionCounts).reduce((a, b) => emotionCounts[a] > emotionCounts[b] ? a : b);
