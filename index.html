@@ -256,7 +256,7 @@
             justify-content: center;
             align-items: center;
             font-weight: bold;
-            background: #f1f1f181 !important;
+            background: #f1f1f1!important;
             font-size: 18px;
             font-family: 'Baloo 2', cursive;
         }
@@ -649,10 +649,18 @@
                     clearInterval(scanInterval);
                     clearInterval(countdownInterval);
 
+                    // Crop to square (centered)
+                    const videoAspect = video.videoWidth / video.videoHeight;
+                    const frameSize = Math.min(video.videoWidth, video.videoHeight);
+                    const cropX = (video.videoWidth - frameSize) / 2;
+                    const cropY = (video.videoHeight - frameSize) / 2;
+
                     const canvasPhoto = document.createElement('canvas');
-                    canvasPhoto.width = video.videoWidth;
-                    canvasPhoto.height = video.videoHeight;
-                    canvasPhoto.getContext('2d').drawImage(video, 0, 0, canvasPhoto.width, canvasPhoto.height);
+                    canvasPhoto.width = frameSize;
+                    canvasPhoto.height = frameSize;
+                    const ctx = canvasPhoto.getContext('2d');
+                    ctx.drawImage(video, cropX, cropY, frameSize, frameSize, 0, 0, frameSize, frameSize);
+
                     capturedPhoto.src = canvasPhoto.toDataURL('image/png');
                     capturedPhoto.style.display = 'block';
                     video.style.display = 'none';
